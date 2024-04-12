@@ -1,0 +1,21 @@
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: dimgray;
+    padding-inline: 40px;
+    align-items: center;
+}
+
+button {
+    height: 30px;
+    width: 30px;
+    border: none;
+}
+
+button:hover {
+    background-color: lightgrey;
+}
+
+h1 {
+    color: aliceblue;
+}
