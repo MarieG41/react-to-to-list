@@ -5,3 +5,7 @@
 .trash-icon:hover{
     cursor:pointer;
 }
+
+.badge {
+    color: white !important;
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { TaskContext } from "../utils/context/TaskContext";
 import Table from "react-bootstrap/Table";
 import Container from "react-bootstrap/Container";
@@ -13,6 +13,30 @@ import '../assets/styles/home.css'
 
 export default function Home() {
   const { tasks, handleTaskStatusChange, removeTask } = useContext(TaskContext);
+  const [showToDoOnly, setShowToDoOnly] = useState(false);
+  const [currentTasks, setCurrentTasks] = useState([]);
+  const [showByPriority, setShowByPriority] = useState(false);
+
+  useEffect(() => {
+    let filteredTasks = showToDoOnly
+      ? tasks.filter((task) => task.status === "En cours")
+      : tasks;
+
+    filteredTasks =
+      showByPriority && showByPriority !== "all"
+        ? filteredTasks.filter((task) => task.priority === showByPriority)
+        : filteredTasks;
+
+    setCurrentTasks(filteredTasks);
+  }, [showToDoOnly, showByPriority, tasks]);
+
+  const handleShowToDoOnly = () => {
+    setShowToDoOnly(!showToDoOnly);
+  };
+
+  const handleShowByPriority = (e) => {
+    setShowByPriority(e.target.value);
+  };
   return (
     <Container>
       <Row>
@@ -20,12 +44,20 @@ export default function Home() {
       </Row>
       <Row className="align-items-end">
         <Col xs={3}>
-          <Button variant="primary" className="mb-3"></Button>
+          <Button
+            variant="primary"
+            className="mb-3"
+            onClick={handleShowToDoOnly}
+          >
+            {showToDoOnly
+              ? "Voir toutes les tâches"
+              : "Voir seulement les tâches à faire"}
+          </Button>
         </Col>
         <Col xs={5}>
           <Form.Group className="mb-3">
             <Form.Label>Priorité</Form.Label>
-            <Form.Select name="priority">
+            <Form.Select name="priority" onChange={handleShowByPriority}>
               <option value="all">Toutes</option>
               <option value="Basse">Basse</option>
               <option value="Moyenne">Moyenne</option>
@@ -36,42 +68,49 @@ export default function Home() {
       </Row>
 
       <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Nom de la tâche</th>
-            <th>Date</th>
-            <th>Priorité</th>
-            <th>Statut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td></td>
-            <td></td>
-            <td>
-              <Badge
-                bg={
-                  tasks.priority === "Elevée"
-                    ? "danger"
-                    : tasks.priority === "Moyenne"
-                    ? "warning"
-                    : "success"
-                }
-              >
-                {tasks.priority}
-              </Badge>
-            </td>
-            <td>
-              <Form.Check type="checkbox" id={`status`} onChange={(e) =>
-                        handleTaskStatusChange(tasks.name, e.target.checked)
-                      }/>
-            </td>
-            <td>
-              <img onClick={() => removeTask(tasks.name)} className="trash-icon" src={trash} alt="Icone d'une poubelle rouge" />
-            </td>
-          </tr>
-        </tbody>
+      <thead>
+            <tr>
+              <th>Nom</th>
+              <th>A faire avant le</th>
+              <th>Priorité</th>
+              <th>Terminé ?</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentTasks.length > 0 &&
+              currentTasks.map((task, index) => (
+                <tr key={index}>
+                  <td>{task.name}</td>
+                  <td>{task.dueDate}</td>
+                  <td>
+                    <Badge
+                      bg={
+                        task.priority === "Elevée"
+                          ? "danger"
+                          : task.priority === "Moyenne"
+                          ? "warning"
+                          : "success"
+                      }
+                    >
+                      {task.priority}
+                    </Badge>
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={task.status === "Terminé"}
+                      onChange={(e) =>
+                        handleTaskStatusChange(task.name, e.target.checked)
+                      }
+                    />
+                  </td>
+                  <td>
+                    <img onClick={() => removeTask(task.name)} className="trash-icon" src={trash} alt="Icone d'une poubelle rouge" />
+                  </td>
+                </tr>
+              ))}
+          </tbody>
       </Table>
     </Container>
   );
